@@ -232,6 +232,14 @@
   @media(max-width:760px){html{font-size:112%}}
   html,body{overflow-x:hidden}
   .heart-divider{letter-spacing:.15em}
+
+  .bear-music{position:fixed;left:12px;bottom:12px;z-index:20;width:46px;height:46px;border-radius:50%;border:2px solid #fff;background:rgba(255,236,241,.88);backdrop-filter:blur(6px);box-shadow:0 3px 0 #f6bfce,0 6px 14px rgba(217,93,130,.22);cursor:pointer;padding:0;opacity:.88;transition:transform .2s,opacity .2s}
+  .bear-music:hover{opacity:1;transform:scale(1.08)}
+  .bm-face{font-size:1.45rem;line-height:1;display:block}
+  .bm-badge{position:absolute;right:-5px;top:-7px;min-width:20px;height:20px;border-radius:999px;background:#fff;color:#e0587f;font:700 .72rem/20px Nunito,sans-serif;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+  .bear-music.playing .bm-face{animation:sway 1.8s ease-in-out infinite}
+  .bear-music.playing .bm-badge{animation:floaty 2s ease-in-out infinite}
+  @keyframes sway{0%,100%{transform:rotate(-9deg)}50%{transform:rotate(9deg)}}
 </style>
 </head>
 <body>
@@ -323,7 +331,7 @@
   const eventDate = new Date("2026-11-15T16:00:00");
   const eventDateLabel = "Domingo<br>15 de noviembre de 2026";
   const eventTimeLabel = "4:00 p. m.";
-  const venueName = "Salón Los fiestas Damaso";
+  const venueName = "Salón fiestas Damaso";
   const venueAddress = "Cerrito de Oro";
   const whatsappPhone = "527444087943"; // Número con código de país, sin + ni espacios. México: 52...
   const messageStorageKey = "joySofiaGuestbookMessages";
@@ -444,15 +452,21 @@
   })();
 </script>
 <audio id="bgMusic" src="musica.mp3" loop preload="auto"></audio>
+<button class="bear-music" id="musicBtn" type="button" aria-label="Activar o pausar la música" title="Música"><span class="bm-face">🧸</span><span class="bm-badge" id="musicBadge">💤</span></button>
 <script>
-  // Música de fondo sin botón: intenta sonar al abrir y, si el navegador lo bloquea, arranca con el primer toque.
+  // Música de fondo: intenta sonar al abrir; si el navegador lo bloquea, arranca con el primer toque.
   (function(){
-    var a=document.getElementById("bgMusic");a.volume=.6;
-    var evs=["click","touchstart","touchend","keydown","pointerdown","mousedown"],done=false;
+    var a=document.getElementById("bgMusic"),btn=document.getElementById("musicBtn"),bd=document.getElementById("musicBadge");
+    a.volume=.6;
+    function ui(on){btn.classList.toggle("playing",on);bd.textContent=on?"♪":"💤";}
+    a.addEventListener("play",function(){ui(true);});
+    a.addEventListener("pause",function(){ui(false);});
+    var evs=["click","touchstart","keydown","pointerdown"],done=false;
     function off(){evs.forEach(function(e){document.removeEventListener(e,go,true);});}
-    function go(){if(done)return;var p=a.play();
-      if(p&&p.then){p.then(function(){done=true;off();}).catch(function(){});}else{done=true;off();}}
+    function go(e){if(done)return;if(e&&e.target&&btn.contains(e.target))return;
+      var p=a.play();if(p&&p.then){p.then(function(){done=true;off();}).catch(function(){});}else{done=true;off();}}
     evs.forEach(function(e){document.addEventListener(e,go,true);});
+    btn.addEventListener("click",function(){done=true;off();if(a.paused){a.play().catch(function(){});}else{a.pause();}});
     go();
   })();
 </script>
